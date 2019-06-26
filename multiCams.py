@@ -111,13 +111,27 @@ def multiCams(argv):
 	try:
 		opts, args = getopt.getopt(argv, 'hn:')
 	except getopt.GetoptError:
-		print('Usage: multiCams.py -n <nCams>')
-		print('nCams is the total camera number')
+		print("usage:  multiCams.py [-h] [-n <nCams>]")
+		print("\n")
+		print("Options:")
+		print("-h 		show this help and exit")
+		print("-n nCams  	input the number of the total web cameras")
+		print("\n")
+		print("Examples:")
+		print("python multiCams.py -n 3")
 		sys.exit(2)
 
 	for opt, arg in opts:
 		if opt == '-h':
-			print('multiCams.py -nCams <nCams>')
+			print("usage:  multiCams.py [-h] [-n <nCams>]")
+			print("\n")
+			print("Options:")
+			print("-h 		show this help and exit")
+			print("-n nCams  	input the number of the total web cameras")
+			print("\n")
+			print("Examples:")
+			print("python multiCams.py -n 3")
+			sys.exit()
 		elif opt == '-n':
 			nCams = int(arg)
 
