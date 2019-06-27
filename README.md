@@ -1,6 +1,8 @@
 # multiCams
 
-Multiple web cameras are used and videos and timestamp files are stored simoutaneously
+Multiple web cameras are used on one computer
+
+Videos and timestamp files are stored simoutaneously
 
 Developed based on Python3.7 and OpenCV
 
