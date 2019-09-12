@@ -1,6 +1,6 @@
 # multiCams
 
-Multiple web cameras are used and stored on one computer
+This software is used for storing streams for multiple web cameras that are on one computer.
 
 Videos and timestamp files are stored simoutaneously
 
