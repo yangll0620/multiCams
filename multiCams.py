@@ -9,9 +9,10 @@ import time
 import datetime
 import csv
 import sys, getopt
+from datetime import datetime
 
 class WebcamVideoStream:
-	def __init__(self, src, savepath, width = 640, height = 480):
+	def __init__(self, src, savepath, strtimenow, width = 640, height = 480):
 		"""
 			inputs:
 				src: the camera index
@@ -20,6 +21,7 @@ class WebcamVideoStream:
 		"""
 		self.camID = src
 		self.savepath = savepath
+		self.strtimenow = strtimenow 
 
 		self.videoCap = cv2.VideoCapture(self.camID)
 		self.width = width
@@ -51,18 +53,22 @@ class WebcamVideoStream:
 	def readsaveframe(self):
 		""" continously read and save frame"""
 
+		# prefix of file name for both .avi and .csv files
+		filename_prefix = 'webCam' + str(self.camID) + '_' + self.strtimenow
+		
 		#####################
 		# .avi output config.
 		#####################
-		outname = 'webCam' + str(self.camID) + '.avi'
+		filename_avi = filename_prefix + '.avi'
 		fourcc = cv2.VideoWriter_fourcc(*'XVID')
 		fps = 30.0 # framerate of the created video stream
 		frameSize = (self.width, self.height)
-		out = cv2.VideoWriter(os.path.join(self.savepath,outname), fourcc, fps, frameSize)
+		out = cv2.VideoWriter(os.path.join(self.savepath, filename_avi), fourcc, fps, frameSize)
 
 		# header of the .csv storing timestamp file
 		timefields = ['frame#', 'timestamp']
-		filename_timestamp = 'webCam' + str(self.camID) + '.csv'
+		filename_timestamp = filename_prefix + '.csv'
+		
 		# preview name for showing frames
 		previewName = 'camera' + str(self.camID)
 
@@ -144,8 +150,9 @@ def multiCams(argv):
 	# create nCams WebcamVideoStream instances
 	wvStreams = []
 	previewNames = []
+	strtimenow = datetime.now().strftime('%Y%m%d-%H%M%S')
 	for cami in range(nCams):
-		wvStreams.append(WebcamVideoStream(src = cami, savepath=savepath))
+		wvStreams.append(WebcamVideoStream(src = cami, savepath=savepath, strtimenow = strtimenow))
 		previewNames.append('webCam' + str(cami) + ', Press ESC to stop')
 	
 	# start read and save frame for all cameras
