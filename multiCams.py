@@ -111,33 +111,28 @@ class WebcamVideoStream:
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.videoCap.release()
 
+
+def help():
+	print("usage:  multiCams.py [-h] [-n <nCams>]")
+	print("Options:")
+	print("-h 		show this help and exit")
+	print("-n nCams  	input the number of the total web cameras")
+	print("Examples:")
+	print("python multiCams.py -n 3")
+	sys.exit(2)
+
+
 def multiCams(argv):
 
 	# parse input arguments
 	try:
 		opts, args = getopt.getopt(argv, 'hn:')
 	except getopt.GetoptError:
-		print("usage:  multiCams.py [-h] [-n <nCams>]")
-		print("\n")
-		print("Options:")
-		print("-h 		show this help and exit")
-		print("-n nCams  	input the number of the total web cameras")
-		print("\n")
-		print("Examples:")
-		print("python multiCams.py -n 3")
-		sys.exit(2)
+		help()
 
 	for opt, arg in opts:
 		if opt == '-h':
-			print("usage:  multiCams.py [-h] [-n <nCams>]")
-			print("\n")
-			print("Options:")
-			print("-h 		show this help and exit")
-			print("-n nCams  	input the number of the total web cameras")
-			print("\n")
-			print("Examples:")
-			print("python multiCams.py -n 3")
-			sys.exit()
+			help()
 		elif opt == '-n':
 			nCams = int(arg)
 
