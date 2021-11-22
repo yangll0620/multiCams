@@ -161,7 +161,7 @@ def multiCams(argv):
 			frame = wvStreams[cami].getframe()
 
 			# add timestamp on the frame
-			cv2.putText(frame, str(datetime.datetime.now().replace(microsecond=0)), 
+			cv2.putText(frame, str(datetime.now().replace(microsecond=0)), 
 				(30,30), cv2.FONT_HERSHEY_PLAIN, 1, (100,0,0),2, cv2.LINE_AA)
 			
 			cv2.imshow(previewNames[cami],frame)
