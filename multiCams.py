@@ -1,5 +1,5 @@
-import os
-os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
+#import os
+#os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
 
 import cv2
 import numpy as np
@@ -27,7 +27,7 @@ class WebcamVideoStream:
 		self.savepath = savepath
 		self.strtimenow = strtimenow 
 
-		self.videoCap = cv2.VideoCapture(self.camID)
+		self.videoCap = cv2.VideoCapture(self.camID, cv2.CAP_DSHOW)
 		self.width = width
 		self.height = height
 		self.videoCap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
