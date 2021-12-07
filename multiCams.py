@@ -1,3 +1,6 @@
+import os
+os.environ["OPENCV_VIDEOIO_MSMF_ENABLE_HW_TRANSFORMS"] = "0"
+
 import cv2
 import numpy as np
 from threading import Thread, Lock
@@ -10,6 +13,7 @@ import datetime
 import csv
 import sys, getopt
 from datetime import datetime
+
 
 class WebcamVideoStream:
 	def __init__(self, src, savepath, strtimenow, width = 640, height = 480):
