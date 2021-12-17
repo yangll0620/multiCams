@@ -9,5 +9,6 @@ docs/_build/
 __pycache__
 
 *.avi
+*.csv
 
 test.py

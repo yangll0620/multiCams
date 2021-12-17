@@ -58,7 +58,7 @@ class WebcamVideoStream:
 		""" continously read and save frame"""
 
 		# prefix of file name for both .avi and .csv files
-		filename_prefix = 'webCam' + str(self.camID) + '_' + self.strtimenow
+		filename_prefix = 'video' + '_' + self.strtimenow + "_camera" + str(self.camID)
 		
 		#####################
 		# .avi output config.
@@ -67,7 +67,7 @@ class WebcamVideoStream:
 		fourcc = cv2.VideoWriter_fourcc(*'XVID')
 		fps = 30.0 # framerate of the created video stream
 		frameSize = (self.width, self.height)
-		out = cv2.VideoWriter(os.path.join(self.savepath, filename_avi), fourcc, fps, frameSize)
+		vout = cv2.VideoWriter(os.path.join(self.savepath, filename_avi), fourcc, fps, frameSize)
 
 		# header of the .csv storing timestamp file
 		timefields = ['frame#', 'timestamp']
@@ -80,9 +80,9 @@ class WebcamVideoStream:
 		# start read and save frames
 		############################
 		with open(os.path.join(self.savepath, filename_timestamp), 'w', newline = '') as csvfile:
-			writer = csv.writer(csvfile)
-			writer.writerow(['all video timestamp based on same time 0'])
-			writer.writerow(timefields) # write the head of timestamp csv file
+			fwriter = csv.writer(csvfile)
+			fwriter.writerow(['all video timestamp based on same time 0'])
+			fwriter.writerow(timefields) # write the head of timestamp csv file
 			
 			framei = -1
 			while self.started:
@@ -92,8 +92,8 @@ class WebcamVideoStream:
 				framei += 1
 
 				# write part
-				out.write(frame)
-				writer.writerow([str(framei), frametime])
+				vout.write(frame)
+				fwriter.writerow([str(framei), frametime])
 
 				# read lock 
 				self.read_lock.acquire()
