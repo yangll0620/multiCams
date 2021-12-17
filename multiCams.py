@@ -27,6 +27,7 @@ class WebcamVideoStream:
 		self.savepath = savepath
 		self.strtimenow = strtimenow 
 
+		print("Init Camera" + str(self.camID) + "....")
 		self.videoCap = cv2.VideoCapture(self.camID, cv2.CAP_DSHOW)
 		self.width = width
 		self.height = height
@@ -100,7 +101,7 @@ class WebcamVideoStream:
 				self.frame, self.frametime = frame.copy(), frametime
 				self.read_lock.release()
 
-		out.release()
+		vout.release()
 
 	def getframe(self):
 		self.read_lock.acquire()
