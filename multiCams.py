@@ -24,12 +24,17 @@ class WebcamVideoStream:
 				savepath: path to save the camera frames
 				width, height: video width and height
 		"""
+		print("Init Camera" + str(src) + "....")
+		self.videoCap = cv2.VideoCapture(src, cv2.CAP_DSHOW)
+		if self.videoCap.isOpened() is False:
+			self.videoCap = None
+			return
+
 		self.camID = src
 		self.savepath = savepath
 		self.strtimenow = strtimenow 
 
-		print("Init Camera" + str(self.camID) + "....")
-		self.videoCap = cv2.VideoCapture(self.camID, cv2.CAP_DSHOW)
+		
 		self.width = width
 		self.height = height
 		self.videoCap.set(cv2.CAP_PROP_FRAME_WIDTH, self.width)
@@ -249,16 +254,28 @@ def multiCams(argv):
 	serIO8 = SerialPortIO8(savefile = IO8savefile)
 	if serIO8.serial is None:
 		return
-	serIO8.start()
 
 	# create nCams WebcamVideoStream instances
 	wvStreams = []
 	previewNames = []	
-	for cami in range(nCams):
-		wvStreams.append(WebcamVideoStream(src = cami, savepath=savepath, strtimenow = strtimenow))
-		previewNames.append('webCam' + str(cami) + ', Press ESC to stop')
+	nCams = 0
+	while(True):
+		camStram = WebcamVideoStream(src = nCams, savepath=savepath, strtimenow = strtimenow)
+		if camStram.videoCap is None:
+			break
+		wvStreams.append(camStram)
+		previewNames.append('webCam' + str(nCams) + ', Press ESC to stop')
+		nCams += 1
 	
-	# start read and save frame for all cameras
+	
+	if nCams == 0:
+		print("Can not find camera")
+		return
+
+
+	# start IO8, and read/save frame for all cameras
+	print("There are total " + str(nCams) + " cameras.....")
+	serIO8.start()
 	for cami in range(nCams): 
 		wvStreams[cami].start()
 
