@@ -13,7 +13,8 @@ import datetime
 import csv
 import sys, getopt
 from datetime import datetime
-
+import serial
+import serial.tools.list_ports
 
 class WebcamVideoStream:
 	def __init__(self, src, savepath, strtimenow, width = 640, height = 480):
@@ -59,7 +60,7 @@ class WebcamVideoStream:
 		""" continously read and save frame"""
 
 		# prefix of file name for both .avi and .csv files
-		filename_prefix = 'video' + '_' + self.strtimenow + "_camera" + str(self.camID)
+		filename_prefix = 'v' + '_' + self.strtimenow + "_camera" + str(self.camID)
 		
 		#####################
 		# .avi output config.
@@ -72,7 +73,7 @@ class WebcamVideoStream:
 
 		# header of the .csv storing timestamp file
 		timefields = ['frame#', 'timestamp']
-		filename_timestamp = filename_prefix + '.csv'
+		filename_timestamp = filename_prefix + '_timestamp.csv'
 		
 		# preview name for showing frames
 		previewName = 'camera' + str(self.camID)
@@ -116,6 +117,101 @@ class WebcamVideoStream:
 	def __exit__(self, exc_type, exc_value, traceback):
 		self.videoCap.release()
 
+class SerialPortIO8:
+	def __init__(self, savefile):
+		IO8Name = ""
+		for d, p, i in serial.tools.list_ports.grep("COM[0-9]*"):
+			ser = serial.Serial(port = d, baudrate = 115200, timeout=1, write_timeout=1)
+			ser.write(b'Z')
+			s = ser.readline().strip().decode('UTF-8')
+			ser.close()
+			if("V" in s):
+				IO8Name = d
+				break
+		
+		if IO8Name is "":
+			self.serial = None
+			self.TimestampFile = ""
+			self.started = False
+			print("Can not find Serial Port for IO8 Module.")
+			return
+
+		self.serial = serial.Serial(port = IO8Name, baudrate = 115200, timeout=1, write_timeout=1)
+		self.TimestampFile = savefile
+		self.started = False
+		print("create SerialPortIO8 for " + IO8Name  + "!")
+
+
+	def Locate_serialPortIO8():		
+		IO8Name = ""
+		for d, p, i in serial.tools.list_ports.grep("COM[0-9]*"):
+			ser = serial.Serial(port = d, baudrate = 115200, timeout=1, write_timeout=1)
+			ser.write(b'Z')
+			s = ser.readline().strip().decode('UTF-8')
+			ser.close()
+			if("V" in s):
+				IO8Name = d
+				break
+		
+		return IO8Name
+
+
+	def start(self):
+		if self.started:
+			print("port IO8 already started!")
+			return None
+
+		# read and save frame 
+		self.started = True
+		self.savePressedthread = Thread(target = self.savePressed, args= ())
+		self.savePressedthread.start()
+
+		return self
+
+
+	def savePressed(self):
+		""" continously monitor the startpad state and save only the press timestamp"""
+		
+		# identify idle and pressed bit
+		print("Don't press the startpad to identify the idle state")
+		self.serial.write(b'A')
+		s = self.serial.readline().strip().decode('UTF-8')
+		idlebit = s
+		print("touchpad idle bit = " + s)
+		if(idlebit=="0"):
+			pressbit = "1"
+		else:
+			pressbit = "0"
+
+		print("Identifying Startpad Idle State is done!")
+
+
+		# monitor and save the press 
+		timefields = ['pressed#', 'timestamp'] # header of the .csv storing timestamp file
+		with open(self.TimestampFile, 'w', newline = '') as csvfile:
+			fwriter = csv.writer(csvfile)
+			fwriter.writerow(['all timestamp based on same time 0'])
+			fwriter.writerow(timefields) # write the head of timestamp csv file
+			
+			pressi = 0
+			prebit = ""
+			while self.started:
+				self.serial.write(b'A')
+				s = self.serial.readline().strip().decode('UTF-8')
+				pressedtime = time.time() - t_start
+				if(prebit == idlebit and s == pressbit):
+					pressi += 1
+					fwriter.writerow([str(pressi), pressedtime])
+				prebit = s
+
+	def stop(self):
+		self.started = False
+		self.savePressedthread.join()
+
+	def __exit__(self, exc_type, exc_value, traceback):
+		if (self.IO8serial is not None) and self.IO8serial.is_open:
+			self.IO8serial.close()
+
 
 def help():
 	print("usage:  multiCams.py [-h] [-n <nCams>]")
@@ -146,11 +242,18 @@ def multiCams(argv):
 	tk.Tk().withdraw()
 	savepath = filedialog.askdirectory(initialdir=os.getcwd(), title = 'Please select a save directory')
 
+	strtimenow = datetime.now().strftime('%Y%m%d-%H%M%S')
+
+	# Create SerialPortIO8 instance
+	IO8savefile = os.path.join(savepath, "v_" + strtimenow + "_startpad_timestamp.csv")
+	serIO8 = SerialPortIO8(savefile = IO8savefile)
+	if serIO8.serial is None:
+		return
+	serIO8.start()
 
 	# create nCams WebcamVideoStream instances
 	wvStreams = []
-	previewNames = []
-	strtimenow = datetime.now().strftime('%Y%m%d-%H%M%S')
+	previewNames = []	
 	for cami in range(nCams):
 		wvStreams.append(WebcamVideoStream(src = cami, savepath=savepath, strtimenow = strtimenow))
 		previewNames.append('webCam' + str(cami) + ', Press ESC to stop')
@@ -159,7 +262,8 @@ def multiCams(argv):
 	for cami in range(nCams): 
 		wvStreams[cami].start()
 
-	print("vides are saved in " + savepath)
+
+	print("vides/timestamp are saved in " + savepath)
 	while True:
 		# frame show
 		for cami in range(nCams):
@@ -178,9 +282,11 @@ def multiCams(argv):
 	for cami in range(nCams): 
 		wvStreams[cami].stop()
 	cv2.destroyAllWindows()
+	serIO8.stop()
 
 
 
 if __name__ == "__main__":
 	t_start = time.time() # global t_start
 	multiCams(sys.argv[1:])
+
