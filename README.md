@@ -18,3 +18,7 @@ After installation, inside the folder open the terminal and run
 $ conda activate multiCams
 
 $ python multiCams.py -n 2 # simoutanously record 2 webcams
+
+
+# Issue
+The new automatically detect camera number does not work.
