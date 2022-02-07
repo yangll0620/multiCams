@@ -24,11 +24,11 @@ class WebcamVideoStream:
 				savepath: path to save the camera frames
 				width, height: video width and height
 		"""
-		self.camID = src
+		self.camID = src # camID start from 0
 		self.savepath = savepath
 		self.strtimenow = strtimenow 
 
-		print("Init Camera" + str(self.camID) + "....")
+		print("Init camera-" + str(self.camID + 1) + "....")
 		self.videoCap = cv2.VideoCapture(self.camID, cv2.CAP_DSHOW)
 		self.width = width
 		self.height = height
@@ -46,7 +46,7 @@ class WebcamVideoStream:
 
 	def start(self):
 		if self.started:
-			print('webCam' + str(self.camID) + " already started!")
+			print('Camera-' + str(self.camID + 1) + " already started!")
 			return None
 
 		# read and save frame 
@@ -60,7 +60,7 @@ class WebcamVideoStream:
 		""" continously read and save frame"""
 
 		# prefix of file name for both .avi and .csv files
-		filename_prefix = 'v' + '_' + self.strtimenow + "_camera" + str(self.camID)
+		filename_prefix = 'v' + '_' + self.strtimenow + "_camera" + '-' + str(self.camID + 1)
 		
 		#####################
 		# .avi output config.
@@ -75,8 +75,6 @@ class WebcamVideoStream:
 		timefields = ['frame#', 'timestamp']
 		filename_timestamp = filename_prefix + '_timestamp.csv'
 		
-		# preview name for showing frames
-		previewName = 'camera' + str(self.camID)
 
 		############################
 		# start read and save frames
@@ -218,6 +216,7 @@ def help():
 	print("Options:")
 	print("-h 		show this help and exit")
 	print("-n nCams  	input the number of the total web cameras")
+	print("-IO8Exist y  	IO8 exist y/n [n]")
 	print("Examples:")
 	print("python multiCams.py -n 3")
 	sys.exit(2)
@@ -227,15 +226,22 @@ def multiCams(argv):
 
 	# parse input arguments
 	try:
-		opts, args = getopt.getopt(argv, 'hn:')
+		opts, args = getopt.getopt(argv, 'n:e:h:', ["nCams =", "IO8Exist =", "help ="])
 	except getopt.GetoptError:
 		help()
 
+	IO8Exist = False
 	for opt, arg in opts:
-		if opt == '-h':
-			help()
-		elif opt == '-n':
+		if  opt in ['-n', '--nCams ']:
 			nCams = int(arg)
+			
+		elif opt in ['-e', '--IO8Exist ']:
+			x = str(arg)
+			if x == 'y':
+				IO8Exist = True
+
+		elif opt in ['-h', '--help ']:
+			help()
 
 
 	# pop dialog for save path input
@@ -245,18 +251,19 @@ def multiCams(argv):
 	strtimenow = datetime.now().strftime('%Y%m%d-%H%M%S')
 
 	# Create SerialPortIO8 instance
-	IO8savefile = os.path.join(savepath, "v_" + strtimenow + "_startpad_timestamp.csv")
-	serIO8 = SerialPortIO8(savefile = IO8savefile)
-	if serIO8.serial is None:
-		return
-	serIO8.start()
+	if IO8Exist:
+		IO8savefile = os.path.join(savepath, "v_" + strtimenow + "_startpad_timestamp.csv")
+		serIO8 = SerialPortIO8(savefile = IO8savefile)
+		if serIO8.serial is None:
+			return
+		serIO8.start()
 
 	# create nCams WebcamVideoStream instances
 	wvStreams = []
 	previewNames = []	
 	for cami in range(nCams):
 		wvStreams.append(WebcamVideoStream(src = cami, savepath=savepath, strtimenow = strtimenow))
-		previewNames.append('webCam' + str(cami) + ', Press ESC to stop')
+		previewNames.append('camera-' + str(cami + 1) + ', Press ESC to stop')
 	
 	# start read and save frame for all cameras
 	for cami in range(nCams): 
@@ -282,7 +289,9 @@ def multiCams(argv):
 	for cami in range(nCams): 
 		wvStreams[cami].stop()
 	cv2.destroyAllWindows()
-	serIO8.stop()
+
+	if IO8Exist:
+		serIO8.stop()
 
 
 
