@@ -278,7 +278,8 @@ def multiCams(argv):
 
 	# start IO8, and read/save frame for all cameras
 	print("There are total " + str(nCams) + " cameras.....")
-	serIO8.start()
+	if IO8Exist:
+		serIO8.start()
 	for cami in range(nCams): 
 		wvStreams[cami].start()
 
