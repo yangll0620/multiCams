@@ -60,7 +60,7 @@ class WebcamVideoStream:
 		""" continously read and save frame"""
 
 		# prefix of file name for both .avi and .csv files
-		filename_prefix = 'v' + '_' + self.strtimenow + "_camera" + '-' + str(self.camID + 1)
+		filename_prefix = 'v' + '-' + self.strtimenow + "-camera" + '-' + str(self.camID + 1)
 		
 		#####################
 		# .avi output config.
@@ -73,7 +73,7 @@ class WebcamVideoStream:
 
 		# header of the .csv storing timestamp file
 		timefields = ['frame#', 'timestamp']
-		filename_timestamp = filename_prefix + '_timestamp.csv'
+		filename_timestamp = filename_prefix + '-timestamp.csv'
 		
 
 		############################
@@ -212,13 +212,17 @@ class SerialPortIO8:
 
 
 def help():
-	print("usage:  multiCams.py [-h] [-n <nCams>]")
+	print("usage:  multiCams.py [-h] [-n <nCams>] [--IO8Exist <existLabel>]")
+	print("\n")
 	print("Options:")
-	print("-h 		show this help and exit")
-	print("-n nCams  	input the number of the total web cameras")
-	print("-IO8Exist y  	IO8 exist y/n [n]")
+	print("-h, --help 			show this help and exit")
+	print("-n, --nCams <cameraNum>		input the number of the total web cameras")
+	print("--IO8Exist <existLabel>  	IO8 exist (y) or not (n), default is n")
+	print("\n")
+
 	print("Examples:")
-	print("python multiCams.py -n 3")
+	print("python multiCams.py -n 3 --IO8Exist y")
+	
 	sys.exit(2)
 
 
@@ -252,7 +256,7 @@ def multiCams(argv):
 
 	# Create SerialPortIO8 instance
 	if IO8Exist:
-		IO8savefile = os.path.join(savepath, "v_" + strtimenow + "_startpad_timestamp.csv")
+		IO8savefile = os.path.join(savepath, "v-" + strtimenow + "-startpad-timestamp.csv")
 		serIO8 = SerialPortIO8(savefile = IO8savefile)
 		if serIO8.serial is None:
 			return
