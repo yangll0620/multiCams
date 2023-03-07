@@ -18,3 +18,5 @@ After installation, inside the folder open the terminal and run
 $ conda activate multiCams
 
 $ python multiCams.py -n 2 --IO8Exist y # simoutanously record 2 webcams, IO8 exist
+
+$ python multiCams.py -n 2 --IO8Exist n # simoutanously record 2 webcams, IO8 not exist
